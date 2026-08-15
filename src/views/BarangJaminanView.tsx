@@ -3,7 +3,8 @@ import { useSync } from '../context/SyncContext';
 import { StatusGadai, TransaksiGadai } from '../types';
 import { formatRupiah, formatDateIndonesian, evaluatePawnStatus } from '../utils/calculator';
 import { ActiveTab } from '../components/Header';
-import { Package, Search, Filter, Clock, CheckCircle, ShieldAlert, Eye, X, Trash2, AlertTriangle } from 'lucide-react';
+import { PatternLock } from '../components/PatternLock';
+import { Package, Search, Filter, Clock, CheckCircle, ShieldAlert, Eye, X, Trash2, AlertTriangle, Lock } from 'lucide-react';
 
 interface BarangJaminanViewProps {
   setActiveTab: (tab: ActiveTab) => void;
@@ -233,6 +234,31 @@ export const BarangJaminanView: React.FC<BarangJaminanViewProps> = ({ setActiveT
                 <div><b>Warna:</b> {detailModalTx.warna || '-'}</div>
                 <div><b>Perlengkapan:</b> {Array.isArray(detailModalTx.perlengkapan) ? detailModalTx.perlengkapan.join(', ') : detailModalTx.perlengkapan}</div>
               </div>
+
+              {/* PIN & Pola Lock Section in Modal */}
+              {(detailModalTx.pinHp || (detailModalTx.polaHp && detailModalTx.polaHp.length > 0)) && (
+                <div className="border border-blue-200 bg-sky-50/50 p-3 rounded-xl space-y-2">
+                  <div className="font-bold text-xs text-blue-900 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-blue-600" /> Kunci Pengaman Perangkat:
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    {detailModalTx.pinHp && (
+                      <div className="bg-white p-2.5 rounded-lg border border-blue-100 shadow-xs">
+                        <div className="text-[10px] text-gray-500 font-bold">PIN / PASSWORD HP:</div>
+                        <div className="text-sm font-bold font-mono text-blue-950">{detailModalTx.pinHp}</div>
+                      </div>
+                    )}
+
+                    {detailModalTx.polaHp && detailModalTx.polaHp.length > 0 && (
+                      <div className="bg-white p-2 rounded-lg border border-blue-100 flex flex-col items-center">
+                        <div className="text-[10px] text-gray-500 font-bold mb-1">POLA LAYAR (PATTERN):</div>
+                        <PatternLock value={detailModalTx.polaHp} readOnly size={130} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="border p-3 rounded-xl space-y-1">
                 <div className="flex justify-between">

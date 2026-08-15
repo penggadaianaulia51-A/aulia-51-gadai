@@ -6,7 +6,8 @@ import { DAFTAR_WARNA } from '../data/indonesiaProvinces';
 import { JenisBarang, TransaksiGadai, Perlengkapan, Nasabah } from '../types';
 import { calculateNewPawn, formatRupiah, formatDateIndonesian } from '../utils/calculator';
 import { ReceiptModal } from '../components/ReceiptModal';
-import { PlusCircle, Search, Calculator, CheckSquare, Loader2, ArrowLeft } from 'lucide-react';
+import { PatternLock } from '../components/PatternLock';
+import { PlusCircle, Search, Calculator, CheckSquare, Loader2, ArrowLeft, Lock } from 'lucide-react';
 
 interface GadaiBaruViewProps {
   preSelectedNasabahId?: string;
@@ -35,6 +36,8 @@ export const GadaiBaruView: React.FC<GadaiBaruViewProps> = ({ preSelectedNasabah
   const [imeiSn, setImeiSn] = useState('');
   const [warna, setWarna] = useState('Hitam (Black)');
   const [warnaManual, setWarnaManual] = useState('');
+  const [pinHp, setPinHp] = useState('');
+  const [polaHp, setPolaHp] = useState<number[]>([]);
 
   // Perlengkapan Checkboxes
   const perlengkapanOptions: Perlengkapan[] = ['FULLSET', 'ADAPTOR', 'KABEL', 'KARDUS', 'TAS/CASE', 'TIDAK ADA'];
@@ -110,6 +113,8 @@ export const GadaiBaruView: React.FC<GadaiBaruViewProps> = ({ preSelectedNasabah
       imeiSn,
       warna: finalWarna,
       perlengkapan: selectedPerlengkapan,
+      pinHp: pinHp.trim() || undefined,
+      polaHp: polaHp.length > 0 ? polaHp : undefined,
       pinjaman: pinjamanNum,
       biayaAdmin: calc.biayaAdmin,
       tanggalGadai: calc.tanggalGadai,
@@ -343,6 +348,41 @@ export const GadaiBaruView: React.FC<GadaiBaruViewProps> = ({ preSelectedNasabah
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* PIN / Passcode & Pattern Lock HP / Perangkat */}
+            <div className="md:col-span-3 pt-3 border-t border-gray-200">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Lock className="w-4 h-4 text-blue-600" /> Kunci Pengaman Perangkat (PIN & Pola Layar)
+              </label>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-gray-700">
+                    PIN / Password Kunci Layar (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 123456 / Budi123 / Kunci: 0000"
+                    value={pinHp}
+                    onChange={(e) => setPinHp(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl font-mono focus:ring-2 focus:ring-blue-500 bg-white font-bold text-blue-900"
+                  />
+                  <p className="text-[10px] text-gray-500">
+                    * Catat PIN/Password atau kata sandi pembuka kunci layar perangkat jika ada.
+                  </p>
+                </div>
+
+                <div className="space-y-1 flex flex-col items-center">
+                  <label className="block text-xs font-bold text-gray-700 self-start">
+                    Gambar Pola Kunci Layar (Pattern Lock 3x3)
+                  </label>
+                  <PatternLock value={polaHp} onChange={setPolaHp} size={170} />
+                  <p className="text-[10px] text-gray-500 text-center">
+                    * Hubungkan titik 3x3 menggunakan mouse atau layar sentuh untuk menggambar pola.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
