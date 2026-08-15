@@ -112,7 +112,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             </div>
 
             {/* Receipt Title */}
-            <div className="text-center border-2 border-black bg-gray-100 text-black font-black text-xs py-1 px-2 uppercase rounded mb-2 tracking-wide">
+            <div className="text-center border-2 border-black bg-white text-black font-black text-xs py-1 px-2 uppercase mb-2 tracking-wide">
               {type === 'GADAI_BARU'
                 ? 'NOTA PENDAFTARAN GADAI BARU'
                 : type === 'PERPANJANG'
@@ -121,7 +121,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             </div>
 
             {/* Transaction Metadata */}
-            <div className="grid grid-cols-2 gap-x-2 text-[10px] bg-white p-1.5 rounded border border-black mb-2 text-black">
+            <div className="grid grid-cols-2 gap-x-2 text-[10px] bg-white p-1.5 border border-black mb-2 text-black">
               <div>
                 <span className="text-black font-medium">NO NOTA:</span>{' '}
                 <b className="text-black font-bold">{transaksi.id}</b>
@@ -232,7 +232,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                           <b className="font-mono text-[9px] text-black">
                             [{transaksi.polaHp.map((d) => d + 1).join(' ➔ ')}]
                           </b>
-                          <PatternLock value={transaksi.polaHp} readOnly size={55} />
+                          <PatternLock value={transaksi.polaHp} readOnly monochrome size={55} />
                         </div>
                       </td>
                     </tr>

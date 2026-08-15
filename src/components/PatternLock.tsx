@@ -6,6 +6,7 @@ interface PatternLockProps {
   onChange?: (pattern: number[]) => void;
   readOnly?: boolean;
   size?: number; // width & height in px
+  monochrome?: boolean; // Force 100% black & white for receipt printing
 }
 
 // 3x3 Grid coordinates (0 to 8)
@@ -17,6 +18,7 @@ export const PatternLock: React.FC<PatternLockProps> = ({
   onChange,
   readOnly = false,
   size = 200,
+  monochrome = false,
 }) => {
   const [pattern, setPattern] = useState<number[]>(value);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -89,9 +91,11 @@ export const PatternLock: React.FC<PatternLockProps> = ({
     <div className="flex flex-col items-center space-y-2 select-none">
       <div
         ref={containerRef}
-        className={`relative bg-slate-900 rounded-2xl p-2 shadow-inner ${
-          readOnly ? 'cursor-default' : 'cursor-pointer touch-none'
-        }`}
+        className={`relative rounded-2xl p-2 transition-all ${
+          monochrome
+            ? 'bg-white border-2 border-black shadow-none'
+            : 'bg-slate-900 shadow-inner'
+        } ${readOnly ? 'cursor-default' : 'cursor-pointer touch-none'}`}
         style={{ width: size, height: size }}
         onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
         onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
@@ -118,8 +122,8 @@ export const PatternLock: React.FC<PatternLockProps> = ({
                 y1={prev.y}
                 x2={curr.x}
                 y2={curr.y}
-                stroke="#38bdf8" // Sky blue 400
-                strokeWidth={size * 0.035}
+                stroke={monochrome ? '#000000' : '#38bdf8'}
+                strokeWidth={size * (monochrome ? 0.045 : 0.035)}
                 strokeLinecap="round"
               />
             );
@@ -145,17 +149,21 @@ export const PatternLock: React.FC<PatternLockProps> = ({
             >
               {/* Outer Ring */}
               <div
-                className={`w-full h-full rounded-full border-2 flex items-center justify-center font-bold text-[10px] transition-all ${
-                  isSelected
-                    ? 'border-sky-400 bg-sky-500/20 text-sky-200 scale-110 shadow-lg shadow-sky-500/50'
-                    : 'border-slate-600 bg-slate-800/80 text-slate-400'
+                className={`w-full h-full rounded-full flex items-center justify-center font-bold text-[10px] transition-all ${
+                  monochrome
+                    ? isSelected
+                      ? 'border-2 border-black bg-black text-white scale-110'
+                      : 'border-2 border-black bg-white text-black'
+                    : isSelected
+                    ? 'border-2 border-sky-400 bg-sky-500/20 text-sky-200 scale-110 shadow-lg shadow-sky-500/50'
+                    : 'border-2 border-slate-600 bg-slate-800/80 text-slate-400'
                 }`}
               >
                 {/* Inner Dot or Sequence Number */}
                 {isSelected ? (
                   <span className="font-extrabold">{order}</span>
                 ) : (
-                  <div className="w-2 h-2 rounded-full bg-slate-400" />
+                  <div className={`w-2 h-2 rounded-full ${monochrome ? 'bg-black' : 'bg-slate-400'}`} />
                 )}
               </div>
             </div>
@@ -165,13 +173,13 @@ export const PatternLock: React.FC<PatternLockProps> = ({
 
       {/* Pattern Sequence & Controls */}
       <div className="flex items-center justify-between w-full max-w-[200px] text-xs">
-        <div className="text-[11px] font-mono font-bold text-slate-700 truncate">
+        <div className="text-[11px] font-mono font-bold text-black truncate">
           {pattern.length > 0 ? (
-            <span className="text-sky-700 bg-sky-100 px-2 py-0.5 rounded">
+            <span className={monochrome ? 'text-black font-extrabold' : 'text-sky-700 bg-sky-100 px-2 py-0.5 rounded'}>
               Pola: {pattern.map((d) => d + 1).join(' ➔ ')}
             </span>
           ) : (
-            <span className="text-gray-400 italic">Pola Belum Diisi</span>
+            <span className="text-gray-500 italic">Pola Belum Diisi</span>
           )}
         </div>
 
