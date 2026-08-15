@@ -1,6 +1,7 @@
 import React from 'react';
 import { TransaksiGadai, Nasabah, Pembayaran, AppSettings } from '../types';
 import { formatRupiah, formatDateIndonesian } from '../utils/calculator';
+import { PatternLock } from './PatternLock';
 import { Printer, Send, Mail, CheckCircle, X, Download } from 'lucide-react';
 
 interface ReceiptModalProps {
@@ -215,6 +216,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                         : transaksi.perlengkapan}
                     </td>
                   </tr>
+                  {transaksi.pinHp && (
+                    <tr>
+                      <td className="text-black font-bold">PIN / Passcode</td>
+                      <td className="text-center text-black">:</td>
+                      <td className="font-bold font-mono text-black">{transaksi.pinHp}</td>
+                    </tr>
+                  )}
+                  {transaksi.polaHp && transaksi.polaHp.length > 0 && (
+                    <tr>
+                      <td className="text-black font-bold">Pola Layar (Pattern)</td>
+                      <td className="text-center text-black">:</td>
+                      <td className="text-black">
+                        <div className="flex items-center gap-2 py-0.5">
+                          <b className="font-mono text-[9px] text-black">
+                            [{transaksi.polaHp.map((d) => d + 1).join(' ➔ ')}]
+                          </b>
+                          <PatternLock value={transaksi.polaHp} readOnly size={55} />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
