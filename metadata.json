@@ -1,0 +1,6 @@
+{
+  "name": "Aulia 51 Gadai",
+  "description": "Aplikasi Penggadaian Aulia 51 Gadai terintegrasi Google Sheets dan Drive",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
