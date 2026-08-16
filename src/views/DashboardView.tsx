@@ -25,24 +25,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ setActiveTab }) =>
   const { transaksiList, nasabahList, syncState } = useSync();
 
   const isConnected = syncState.isConnected;
+  const today = new Date().toISOString().split('T')[0];
+
+  // Dynamically evaluate pawn statuses based on today's date
+  const evaluatedList = transaksiList.map((t) => {
+    const ev = evaluatePawnStatus(t, today);
+    return { ...t, currentStatus: ev.status, currentDenda: ev.denda };
+  });
 
   // Calculate Summary Statistics
   const totalNasabah = nasabahList.length;
-  const activePawns = transaksiList.filter((t) => t.status === 'AKTIF');
-  const gracePawns = transaksiList.filter((t) => t.status === 'TENGGANG');
-  const expiredPawns = transaksiList.filter((t) => t.status === 'HANGUS');
-  const auctionedPawns = transaksiList.filter((t) => t.status === 'TERLELANG');
-  const paidPawns = transaksiList.filter((t) => t.status === 'LUNAS');
+  const activePawns = evaluatedList.filter((t) => t.currentStatus === 'AKTIF');
+  const gracePawns = evaluatedList.filter((t) => t.currentStatus === 'TENGGANG');
+  const expiredPawns = evaluatedList.filter((t) => t.currentStatus === 'HANGUS');
+  const auctionedPawns = evaluatedList.filter((t) => t.currentStatus === 'TERLELANG');
+  const paidPawns = evaluatedList.filter((t) => t.currentStatus === 'LUNAS');
 
   const totalPinjamanAktif = activePawns.reduce((sum, t) => sum + t.pinjaman, 0);
   const totalEstimasiAdmin = activePawns.reduce((sum, t) => sum + t.biayaAdmin, 0);
 
-  // Today's Date
-  const today = new Date().toISOString().split('T')[0];
-
   // Urgent Alerts: Pawns maturing today or past due (tenggang)
-  const urgentAlerts = transaksiList.filter(
-    (t) => (t.status === 'AKTIF' && t.jatuhTempo <= today) || t.status === 'TENGGANG'
+  const urgentAlerts = evaluatedList.filter(
+    (t) => (t.currentStatus === 'AKTIF' && t.jatuhTempo <= today) || t.currentStatus === 'TENGGANG'
   );
 
   return (

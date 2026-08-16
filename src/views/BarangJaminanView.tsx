@@ -39,6 +39,7 @@ export const BarangJaminanView: React.FC<BarangJaminanViewProps> = ({ setActiveT
   };
 
   const filteredList = transaksiList.filter((tx) => {
+    const evalRes = evaluatePawnStatus(tx, today);
     const matchesSearch =
       tx.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tx.namaNasabah.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,7 +47,7 @@ export const BarangJaminanView: React.FC<BarangJaminanViewProps> = ({ setActiveT
       tx.typeSeri.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tx.imeiSn.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = selectedStatus === 'SEMUA' || tx.status === selectedStatus;
+    const matchesStatus = selectedStatus === 'SEMUA' || evalRes.status === selectedStatus;
 
     return matchesSearch && matchesStatus;
   });
@@ -152,18 +153,18 @@ export const BarangJaminanView: React.FC<BarangJaminanViewProps> = ({ setActiveT
                       <td className="p-3.5">
                         <span
                           className={`px-2.5 py-1 rounded-full font-bold text-[10px] uppercase inline-block ${
-                            tx.status === 'AKTIF'
+                            evalRes.status === 'AKTIF'
                               ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                              : tx.status === 'TENGGANG'
+                              : evalRes.status === 'TENGGANG'
                               ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                              : tx.status === 'HANGUS'
+                              : evalRes.status === 'HANGUS'
                               ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                              : tx.status === 'TERLELANG'
+                              : evalRes.status === 'TERLELANG'
                               ? 'bg-purple-100 text-purple-800 border border-purple-300'
                               : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                           }`}
                         >
-                          {tx.status}
+                          {evalRes.status}
                         </span>
                       </td>
                       <td className="p-3.5 text-right space-x-1">
@@ -174,7 +175,7 @@ export const BarangJaminanView: React.FC<BarangJaminanViewProps> = ({ setActiveT
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
-                        {(tx.status === 'AKTIF' || tx.status === 'TENGGANG') && (
+                        {(evalRes.status === 'AKTIF' || evalRes.status === 'TENGGANG') && (
                           <>
                             <button
                               onClick={() => setActiveTab('PERPANJANG')}
