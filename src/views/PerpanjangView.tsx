@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { useSync } from '../context/SyncContext';
 import { TransaksiGadai, MetodePembayaran, Pembayaran } from '../types';
-import { evaluatePawnStatus, formatRupiah, formatDateIndonesian } from '../utils/calculator';
+import { evaluatePawnStatus, formatRupiah, formatDateIndonesian, addDays } from '../utils/calculator';
 import { ReceiptModal } from '../components/ReceiptModal';
 import { Clock, Search, CreditCard, Loader2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
@@ -220,8 +220,22 @@ export const PerpanjangView: React.FC<PerpanjangViewProps> = ({ onBackToDashboar
                   <span className="text-lg text-amber-800">{formatRupiah(totalWajibBayar)}</span>
                 </div>
 
-                <div className="text-[11px] text-gray-500 italic mt-1">
-                  * Setelah diproses, tanggal Jatuh Tempo akan diperpanjang +14 hari ke depan!
+                <div className="bg-white p-2.5 rounded-lg border border-amber-300 space-y-1 font-mono text-[11px] mt-2">
+                  <div className="font-bold text-slate-900 border-b border-slate-200 pb-1 uppercase">
+                    📅 Estimasi Tanggal Setelah Diperpanjang:
+                  </div>
+                  <div className="flex justify-between text-slate-700">
+                    <span>Jatuh Tempo Baru (+14 Hari):</span>
+                    <span className="font-bold text-blue-900">{formatDateIndonesian(addDays(selectedTx.jatuhTempo, 14))}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-700">
+                    <span>Batas Masa Tenggang Baru (+14 Hari):</span>
+                    <span className="font-bold text-amber-900">{formatDateIndonesian(addDays(selectedTx.jatuhTempo, 28))}</span>
+                  </div>
+                  <div className="flex justify-between text-rose-900 font-bold bg-rose-50 p-1 rounded border border-rose-200">
+                    <span>TANGGAL HANGUS BARU:</span>
+                    <span className="underline font-black text-rose-700">{formatDateIndonesian(addDays(selectedTx.jatuhTempo, 29)).toUpperCase()}</span>
+                  </div>
                 </div>
               </div>
             </div>
