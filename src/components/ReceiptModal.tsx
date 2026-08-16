@@ -267,24 +267,19 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </div>
 
               <div className="border-t border-black my-1 pt-1 space-y-1">
-                <div className="flex justify-between text-[10px] text-black font-bold">
-                  <span>TANGGAL MASUK (AKAD):</span>
-                  <span>{formatDateIndonesian(transaksi.tanggalGadai)}</span>
+                <div className="flex justify-between text-[10px] text-black font-black border-2 border-black p-1 bg-white">
+                  <span>TANGGAL HANGUS:</span>
+                  <span className="font-mono underline font-bold text-xs">{formatDateIndonesian(addDays(transaksi.masaTenggangHingga, 1)).toUpperCase()}</span>
                 </div>
 
-                <div className="flex justify-between text-[10px] text-black font-bold border border-black p-1">
-                  <span>BATAS WAKTU (JATUH TEMPO 14 HARI):</span>
+                <div className="flex justify-between text-[10px] text-black font-bold p-0.5">
+                  <span>Jatuh Tempo (14 Hari):</span>
                   <span>{formatDateIndonesian(transaksi.jatuhTempo)}</span>
                 </div>
 
-                <div className="flex justify-between text-[9px] text-black font-bold">
-                  <span>BATAS MASA TENGGANG (+14 HARI):</span>
+                <div className="flex justify-between text-[9px] text-black font-semibold p-0.5">
+                  <span>Batas Masa Tenggang (+14 Hari):</span>
                   <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
-                </div>
-
-                <div className="flex justify-between text-[10px] text-black font-black border-2 border-black p-1 bg-white">
-                  <span>TANGGAL HANGUS (SIAP LELANG):</span>
-                  <span className="font-mono underline font-bold text-xs">{formatDateIndonesian(addDays(transaksi.masaTenggangHingga, 1)).toUpperCase()}</span>
                 </div>
               </div>
 
