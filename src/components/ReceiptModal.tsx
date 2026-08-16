@@ -47,6 +47,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       `Pinjaman: *${formatRupiah(transaksi.pinjaman)}*\n` +
       `Biaya Admin (7%): *${formatRupiah(transaksi.biayaAdmin)}*\n` +
       `Jatuh Tempo: *${formatDateIndonesian(transaksi.jatuhTempo)}*\n` +
+      `Tanggal Hangus: *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
       (pembayaran ? `Total Dibayar: *${formatRupiah(pembayaran.totalDibayar)}* (${pembayaran.metodePembayaran})\n` : '') +
       `-------------------------------------\n` +
       `Terima kasih telah menggunakan layanan ${settings.namaToko}.\n` +
@@ -261,6 +262,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               <div className="flex justify-between text-[10px] text-black font-bold my-0.5 border-t border-black pt-1">
                 <span>Jatuh Tempo (14 Hari):</span>
                 <span>{formatDateIndonesian(transaksi.jatuhTempo)}</span>
+              </div>
+              <div className="flex justify-between text-[10px] text-black font-bold my-0.5">
+                <span>Tanggal Hangus / Lelang:</span>
+                <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
               </div>
 
               {pembayaran && (
