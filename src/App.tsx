@@ -12,12 +12,18 @@ import { LaporanView } from './views/LaporanView';
 import { CetakUlangNotaView } from './views/CetakUlangNotaView';
 import { PengaturanView } from './views/PengaturanView';
 
+import { LoginScreen } from './components/LoginScreen';
 import { ShieldAlert } from 'lucide-react';
 
 function MainAppContent() {
-  const { syncState, hasPermission } = useSync();
+  const { syncState, activeUser, hasPermission } = useSync();
   const [activeTab, setActiveTab] = useState<ActiveTab>('DASHBOARD');
   const [selectedNasabahForGadai, setSelectedNasabahForGadai] = useState<string | undefined>(undefined);
+
+  // Guard: Must login first before accessing app
+  if (!activeUser) {
+    return <LoginScreen />;
+  }
 
   const isConnected = syncState.isConnected;
 
