@@ -105,14 +105,14 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             }}
           >
             {/* Header Store Info */}
-            <div className="text-center border-b-2 border-black pb-2 mb-2">
-              <div className="font-black text-xl text-black tracking-wider uppercase">
+            <div className="text-center border-b-2 border-black pb-1 mb-1.5">
+              <div className="font-black text-lg text-black tracking-wider uppercase">
                 {settings.namaToko}
               </div>
-              <div className="text-[10px] text-black font-medium mt-0.5">
+              <div className="text-[9.5px] text-black font-medium mt-0.5">
                 {settings.alamatToko}
               </div>
-              <div className="text-[10px] text-black font-mono">
+              <div className="text-[9px] text-black font-mono">
                 HP/WA: {settings.noHpToko} | Email: {settings.emailToko}
               </div>
             </div>
