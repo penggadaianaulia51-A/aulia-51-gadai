@@ -2,7 +2,7 @@ import React from 'react';
 import { TransaksiGadai, Nasabah, Pembayaran, AppSettings } from '../types';
 import { formatRupiah, formatDateIndonesian, addDays } from '../utils/calculator';
 import { PatternLock } from './PatternLock';
-import { Printer, Send, Mail, CheckCircle, X, Download } from 'lucide-react';
+import { Printer, Send, Mail, CheckCircle, X } from 'lucide-react';
 
 interface ReceiptModalProps {
   type: 'GADAI_BARU' | 'PERPANJANG' | 'PELUNASAN';
@@ -44,15 +44,18 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       `Nama Nasabah: *${nasabah?.nama || transaksi.namaNasabah}*\n` +
       `Barang: *${transaksi.jenisBarang} - ${transaksi.brand} ${transaksi.typeSeri}*\n` +
       `IMEI/SN: *${transaksi.imeiSn || '-'}*\n` +
+      `PIN/Passcode HP: *${transaksi.pinHp || '-'}*\n` +
       `Pinjaman: *${formatRupiah(transaksi.pinjaman)}*\n` +
       `Biaya Admin (7%): *${formatRupiah(transaksi.biayaAdmin)}*\n` +
-      `Tanggal Akad Gadai: *${formatDateIndonesian(transaksi.tanggalGadai)}*\n` +
-      `Jatuh Tempo (14 Hari): *${formatDateIndonesian(transaksi.jatuhTempo)}, TANGGAL HANGUS ${formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}*\n` +
-      `Batas Masa Tenggang (+14 Hari): *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
+      `-------------------------------------\n` +
+      `TANGGAL MASUK: *${formatDateIndonesian(transaksi.tanggalGadai)}*\n` +
+      `BATAS WAKTU (14 HARI): *${formatDateIndonesian(transaksi.jatuhTempo)}*\n` +
+      `TANGGAL HANGUS: *${formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}*\n` +
+      `MASA TENGGANG (+14 HARI): *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
       (pembayaran ? `Total Dibayar: *${formatRupiah(pembayaran.totalDibayar)}* (${pembayaran.metodePembayaran})\n` : '') +
       `-------------------------------------\n` +
       `Terima kasih telah menggunakan layanan ${settings.namaToko}.\n` +
-      `Info: ${settings.noHpToko}`;
+      `Info/WhatsApp: ${settings.noHpToko}`;
 
     const waUrl = `https://wa.me/${cleanHp}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
@@ -61,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const handleSendEmail = () => {
     const emailTo = nasabah?.email || '';
     const subject = `[${settings.namaToko}] Nota Transaksi #${transaksi.id}`;
-    const body = `Yth. ${nasabah?.nama || transaksi.namaNasabah},\n\nTerima kasih atas transaksi Anda di AULIA 51 GADAI.\nDetail Nota #${transaksi.id}:\nBarang: ${transaksi.brand} ${transaksi.typeSeri}\nPinjaman: ${formatRupiah(transaksi.pinjaman)}\nJatuh Tempo: ${formatDateIndonesian(transaksi.jatuhTempo)}\n\nSalam,\nAulia 51 Gadai`;
+    const body = `Yth. ${nasabah?.nama || transaksi.namaNasabah},\n\nTerima kasih atas transaksi Anda di AULIA 51 GADAI.\nDetail Nota #${transaksi.id}:\nBarang: ${transaksi.brand} ${transaksi.typeSeri}\nPinjaman: ${formatRupiah(transaksi.pinjaman)}\nTanggal Masuk: ${formatDateIndonesian(transaksi.tanggalGadai)}\nBatas Waktu: ${formatDateIndonesian(transaksi.jatuhTempo)}\nTanggal Hangus: ${formatDateIndonesian(addDays(transaksi.jatuhTempo, 1))}\n\nSalam,\nAulia 51 Gadai`;
 
     window.open(`mailto:${emailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
@@ -75,7 +78,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-emerald-600" />
             <h2 className="font-bold text-gray-800 text-base md:text-lg">
-              Nota Siap Cetak (108mm x 165mm)
+              Desain Nota Standar Hitam-Putih (108mm x 165mm)
             </h2>
           </div>
           <button
@@ -86,7 +89,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           </button>
         </div>
 
-        {/* --- RECEIPT CONTAINER STRICTLY SIZED FOR 108mm * 165mm --- */}
+        {/* --- RECEIPT CONTAINER STRICTLY SIZED FOR 108mm * 165mm (100% PURE BLACK AND WHITE) --- */}
         <div className="overflow-x-auto flex justify-center bg-gray-100 p-2 sm:p-4 rounded-xl print:bg-white print:p-0">
           <div
             id="printable-receipt"
@@ -98,23 +101,24 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               fontSize: '11px',
               lineHeight: '1.3',
               color: '#000000',
+              backgroundColor: '#ffffff',
             }}
           >
             {/* Header Store Info */}
             <div className="text-center border-b-2 border-black pb-2 mb-2">
-              <div className="font-black text-lg text-black tracking-wider">
+              <div className="font-black text-xl text-black tracking-wider uppercase">
                 {settings.namaToko}
               </div>
-              <div className="text-[10px] text-black font-medium">
+              <div className="text-[10px] text-black font-medium mt-0.5">
                 {settings.alamatToko}
               </div>
-              <div className="text-[10px] text-black">
+              <div className="text-[10px] text-black font-mono">
                 HP/WA: {settings.noHpToko} | Email: {settings.emailToko}
               </div>
             </div>
 
-            {/* Receipt Title */}
-            <div className="text-center border-2 border-black bg-white text-black font-black text-xs py-1 px-2 uppercase mb-2 tracking-wide">
+            {/* Receipt Title Box */}
+            <div className="text-center border-2 border-black bg-white text-black font-black text-xs py-1 px-2 uppercase mb-2 tracking-wider">
               {type === 'GADAI_BARU'
                 ? 'NOTA PENDAFTARAN GADAI BARU'
                 : type === 'PERPANJANG'
@@ -122,57 +126,61 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 : 'NOTA PELUNASAN GADAI'}
             </div>
 
-            {/* Transaction Metadata */}
+            {/* Transaction Metadata (WITHOUT STATUS) */}
             <div className="grid grid-cols-2 gap-x-2 text-[10px] bg-white p-1.5 border border-black mb-2 text-black">
               <div>
-                <span className="text-black font-medium">NO NOTA:</span>{' '}
-                <b className="text-black font-bold">{transaksi.id}</b>
+                <span className="text-black font-bold">NO NOTA:</span>{' '}
+                <b className="text-black font-mono font-bold">{transaksi.id}</b>
               </div>
               <div className="text-right">
-                <span className="text-black font-medium">TANGGAL:</span>{' '}
-                <b className="text-black font-bold">{formatDateIndonesian(pembayaran?.tanggalPembayaran || transaksi.tanggalGadai)}</b>
+                <span className="text-black font-bold">TANGGAL MASUK:</span>{' '}
+                <b className="text-black font-bold">{formatDateIndonesian(transaksi.tanggalGadai)}</b>
               </div>
-              <div>
-                <span className="text-black font-medium">PETUGAS:</span>{' '}
-                <b className="text-black font-bold">{pembayaran?.petugas || transaksi.petugas || 'Kasir'}</b>
-              </div>
-              <div className="text-right">
-                <span className="text-black font-medium">STATUS:</span>{' '}
-                <b className="text-black font-bold uppercase">{transaksi.status}</b>
+              <div className="col-span-2 mt-1 pt-1 border-t border-black flex justify-between">
+                <div>
+                  <span className="text-black font-bold">PETUGAS:</span>{' '}
+                  <span className="text-black font-bold">{pembayaran?.petugas || transaksi.petugas || 'Kasir'}</span>
+                </div>
+                {pembayaran && (
+                  <div>
+                    <span className="text-black font-bold">TGL BAYAR:</span>{' '}
+                    <span className="text-black font-bold">{formatDateIndonesian(pembayaran.tanggalPembayaran)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Nasabah Information */}
-            <div className="border-b border-dashed border-black pb-2 mb-2">
-              <div className="font-black text-[10px] text-black uppercase tracking-wider mb-1">
-                Data Nasabah
+            {/* Section 1: Data Nasabah */}
+            <div className="border border-black p-2 mb-2 bg-white">
+              <div className="font-black text-[10px] text-black uppercase tracking-wider mb-1 border-b border-black pb-0.5">
+                DATA NASABAH
               </div>
-              <table className="w-full text-[10px] text-black">
+              <table className="w-full text-[10px] text-black border-collapse">
                 <tbody>
                   <tr>
-                    <td className="w-24 text-black">ID Nasabah</td>
-                    <td className="w-2 text-center text-black">:</td>
-                    <td className="font-medium text-black">{transaksi.idNasabah}</td>
+                    <td className="w-28 text-black font-bold">ID Nasabah</td>
+                    <td className="w-2 text-center text-black font-bold">:</td>
+                    <td className="font-mono text-black font-bold">{transaksi.idNasabah}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">Nama Lengkap</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="font-bold text-black">{nasabah?.nama || transaksi.namaNasabah}</td>
+                    <td className="text-black font-bold">Nama Lengkap</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="font-black text-black uppercase">{nasabah?.nama || transaksi.namaNasabah}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">No Identitas</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="text-black">{nasabah ? `${nasabah.jenisIdentitas}: ${nasabah.nomorIdentitas}` : '-'}</td>
+                    <td className="text-black font-bold">No Identitas</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="text-black font-mono">{nasabah ? `${nasabah.jenisIdentitas}: ${nasabah.nomorIdentitas}` : '-'}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">No HP / WhatsApp</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="text-black">{nasabah?.noHp || transaksi.noHp}</td>
+                    <td className="text-black font-bold">No HP / WhatsApp</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="text-black font-mono font-bold">{nasabah?.noHp || transaksi.noHp}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">Alamat</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="truncate max-w-[180px] text-black">
+                    <td className="text-black font-bold">Alamat</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="text-black">
                       {nasabah
                         ? `${nasabah.dusun}, Desa ${nasabah.desa}, Kec. ${nasabah.kecamatan}`
                         : '-'}
@@ -182,60 +190,60 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </table>
             </div>
 
-            {/* Barang Jaminan Detail */}
-            <div className="border-b border-dashed border-black pb-2 mb-2">
-              <div className="font-black text-[10px] text-black uppercase tracking-wider mb-1">
-                Detail Barang Jaminan
+            {/* Section 2: Keterangan Barang Jaminan */}
+            <div className="border border-black p-2 mb-2 bg-white">
+              <div className="font-black text-[10px] text-black uppercase tracking-wider mb-1 border-b border-black pb-0.5">
+                KETERANGAN BARANG JAMINAN
               </div>
-              <table className="w-full text-[10px] text-black">
+              <table className="w-full text-[10px] text-black border-collapse">
                 <tbody>
                   <tr>
-                    <td className="w-24 text-black">Jenis Barang</td>
-                    <td className="w-2 text-center text-black">:</td>
-                    <td className="font-bold text-black">{transaksi.jenisBarang}</td>
+                    <td className="w-28 text-black font-bold">Jenis Barang</td>
+                    <td className="w-2 text-center text-black font-bold">:</td>
+                    <td className="font-black text-black uppercase">{transaksi.jenisBarang}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">Brand / Type</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="font-medium text-black">{transaksi.brand} - {transaksi.typeSeri}</td>
+                    <td className="text-black font-bold">Brand / Type</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="font-bold text-black">{transaksi.brand} - {transaksi.typeSeri}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">IMEI / SN</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="font-mono text-black font-semibold">{transaksi.imeiSn || '-'}</td>
+                    <td className="text-black font-bold">IMEI / SN</td>
+                    <td className="text-center text-black font-bold">:</td>
+                    <td className="font-mono text-black font-bold">{transaksi.imeiSn || '-'}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">Warna</td>
-                    <td className="text-center text-black">:</td>
+                    <td className="text-black font-bold">Warna</td>
+                    <td className="text-center text-black font-bold">:</td>
                     <td className="text-black">{transaksi.warna || '-'}</td>
                   </tr>
                   <tr>
-                    <td className="text-black">Perlengkapan</td>
-                    <td className="text-center text-black">:</td>
+                    <td className="text-black font-bold">Perlengkapan</td>
+                    <td className="text-center text-black font-bold">:</td>
                     <td className="text-black">
                       {Array.isArray(transaksi.perlengkapan)
                         ? transaksi.perlengkapan.join(', ')
                         : transaksi.perlengkapan}
                     </td>
                   </tr>
-                  <tr>
-                    <td className="text-black font-bold">PIN / Passcode HP</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="font-bold font-mono text-black">{transaksi.pinHp || '-'}</td>
+                  <tr className="border-t border-black">
+                    <td className="text-black font-bold pt-1">PIN / PASSCODE HP</td>
+                    <td className="text-center text-black font-bold pt-1">:</td>
+                    <td className="font-black font-mono text-black text-[11px] pt-1">{transaksi.pinHp || '-'}</td>
                   </tr>
                   <tr>
-                    <td className="text-black font-bold">Pola Layar (Pattern)</td>
-                    <td className="text-center text-black">:</td>
-                    <td className="text-black">
+                    <td className="text-black font-bold align-top pt-1">POLA LAYAR (PATTERN)</td>
+                    <td className="text-center text-black font-bold align-top pt-1">:</td>
+                    <td className="text-black pt-1">
                       {transaksi.polaHp && transaksi.polaHp.length > 0 ? (
-                        <div className="flex items-center gap-2 py-0.5">
-                          <b className="font-mono text-[9px] text-black">
+                        <div className="flex items-center gap-2">
+                          <b className="font-mono text-[9px] text-black border border-black px-1.5 py-0.5">
                             [{transaksi.polaHp.map((d) => d + 1).join(' ➔ ')}]
                           </b>
-                          <PatternLock value={transaksi.polaHp} readOnly monochrome size={55} />
+                          <PatternLock value={transaksi.polaHp} readOnly monochrome size={50} />
                         </div>
                       ) : (
-                        <span className="text-black font-normal">-</span>
+                        <span className="text-black font-mono">-</span>
                       )}
                     </td>
                   </tr>
@@ -243,47 +251,52 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </table>
             </div>
 
-            {/* Financial Details */}
-            <div className="bg-white p-2 rounded border border-black mb-2 text-black">
+            {/* Section 3: Rincian Keuangan & Tanggal Penting */}
+            <div className="border-2 border-black p-2 mb-2 bg-white text-black">
               <div className="font-black text-[10px] text-black uppercase tracking-wider mb-1 border-b border-black pb-0.5">
-                Rincian Keuangan & Akad
+                RINCIAN KEUANGAN & TANGGAL PENTING
               </div>
-              <div className="flex justify-between text-[11px] font-medium my-0.5">
-                <span className="text-black">Nominal Pinjaman:</span>
-                <span className="font-bold text-black">{formatRupiah(transaksi.pinjaman)}</span>
+
+              <div className="flex justify-between text-[11px] font-bold my-0.5">
+                <span>Nominal Pinjaman:</span>
+                <span className="font-black text-black text-xs">{formatRupiah(transaksi.pinjaman)}</span>
               </div>
               <div className="flex justify-between text-[10px] text-black my-0.5">
                 <span>Biaya Admin (7% / 14 Hari):</span>
                 <span>{formatRupiah(transaksi.biayaAdmin)}</span>
               </div>
-              <div className="flex justify-between text-[10px] text-black my-0.5">
-                <span>Tanggal Akad Gadai:</span>
-                <span>{formatDateIndonesian(transaksi.tanggalGadai)}</span>
-              </div>
-              <div className="flex justify-between text-[10px] text-black font-bold my-0.5 border-t border-black pt-1">
-                <span>Jatuh Tempo (14 Hari):</span>
-                <span className="text-right">
-                  {formatDateIndonesian(transaksi.jatuhTempo)}, TANGGAL HANGUS {formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}
-                </span>
-              </div>
-              <div className="flex justify-between text-[10px] text-black font-bold my-0.5">
-                <span>Tanggal Hangus:</span>
-                <span>{formatDateIndonesian(addDays(transaksi.jatuhTempo, 1))}</span>
-              </div>
-              <div className="flex justify-between text-[9px] text-black my-0.5">
-                <span>Batas Akhir Masa Tenggang (+14 Hari):</span>
-                <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
+
+              <div className="border-t border-black my-1 pt-1 space-y-1">
+                <div className="flex justify-between text-[10px] text-black font-bold">
+                  <span>TANGGAL MASUK (AKAD):</span>
+                  <span>{formatDateIndonesian(transaksi.tanggalGadai)}</span>
+                </div>
+
+                <div className="flex justify-between text-[10px] text-black font-black border border-black p-1">
+                  <span>BATAS WAKTU (JATUH TEMPO 14 HARI):</span>
+                  <span>{formatDateIndonesian(transaksi.jatuhTempo)}</span>
+                </div>
+
+                <div className="flex justify-between text-[10px] text-black font-black border-2 border-black p-1">
+                  <span>TANGGAL HANGUS:</span>
+                  <span className="font-mono underline font-bold">{formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}</span>
+                </div>
+
+                <div className="flex justify-between text-[9px] text-black font-bold">
+                  <span>MASA TENGGANG (BATAS AKHIR +14 HARI):</span>
+                  <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
+                </div>
               </div>
 
               {pembayaran && (
-                <div className="mt-1 pt-1 border-t border-black text-[10px]">
-                  <div className="flex justify-between text-black font-bold">
+                <div className="mt-1.5 pt-1.5 border-t-2 border-black text-[10px]">
+                  <div className="flex justify-between text-black font-black">
                     <span>DIBAYAR SAAT INI ({pembayaran.jenisTransaksi}):</span>
                     <span>{formatRupiah(pembayaran.totalDibayar)}</span>
                   </div>
                   <div className="flex justify-between text-[9px] text-black">
                     <span>Metode Pembayaran:</span>
-                    <span className="font-semibold text-black">{pembayaran.metodePembayaran}</span>
+                    <span className="font-bold text-black">{pembayaran.metodePembayaran}</span>
                   </div>
                 </div>
               )}
