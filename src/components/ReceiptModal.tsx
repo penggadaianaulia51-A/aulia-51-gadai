@@ -1,6 +1,6 @@
 import React from 'react';
 import { TransaksiGadai, Nasabah, Pembayaran, AppSettings } from '../types';
-import { formatRupiah, formatDateIndonesian } from '../utils/calculator';
+import { formatRupiah, formatDateIndonesian, addDays } from '../utils/calculator';
 import { PatternLock } from './PatternLock';
 import { Printer, Send, Mail, CheckCircle, X, Download } from 'lucide-react';
 
@@ -46,8 +46,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       `IMEI/SN: *${transaksi.imeiSn || '-'}*\n` +
       `Pinjaman: *${formatRupiah(transaksi.pinjaman)}*\n` +
       `Biaya Admin (7%): *${formatRupiah(transaksi.biayaAdmin)}*\n` +
-      `Jatuh Tempo: *${formatDateIndonesian(transaksi.jatuhTempo)}*\n` +
-      `Tanggal Hangus: *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
+      `Tanggal Akad Gadai: *${formatDateIndonesian(transaksi.tanggalGadai)}*\n` +
+      `Jatuh Tempo (14 Hari): *${formatDateIndonesian(transaksi.jatuhTempo)}, TANGGAL HANGUS ${formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}*\n` +
+      `Batas Masa Tenggang (+14 Hari): *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
       (pembayaran ? `Total Dibayar: *${formatRupiah(pembayaran.totalDibayar)}* (${pembayaran.metodePembayaran})\n` : '') +
       `-------------------------------------\n` +
       `Terima kasih telah menggunakan layanan ${settings.namaToko}.\n` +
@@ -261,10 +262,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </div>
               <div className="flex justify-between text-[10px] text-black font-bold my-0.5 border-t border-black pt-1">
                 <span>Jatuh Tempo (14 Hari):</span>
-                <span>{formatDateIndonesian(transaksi.jatuhTempo)}</span>
+                <span>
+                  {formatDateIndonesian(transaksi.jatuhTempo)}, TANGGAL HANGUS {formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}
+                </span>
               </div>
-              <div className="flex justify-between text-[10px] text-black font-bold my-0.5">
-                <span>Tanggal Hangus / Lelang:</span>
+              <div className="flex justify-between text-[9px] text-black my-0.5">
+                <span>Batas Masa Tenggang (+14 Hari):</span>
                 <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
               </div>
 
