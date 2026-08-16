@@ -5,7 +5,7 @@ declare global {
 }
 
 // Google OAuth Authentication helper using Google Identity Services (GIS)
-const OAUTH_CLIENT_ID = '778582616003-ae7ed064o2kec24f57sjj050o3fp327u.apps.googleusercontent.com';
+const OAUTH_CLIENT_ID = '962167259009-m4lc8q029jft9obb1s735shp9cpq1620.apps.googleusercontent.com';
 
 const OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',

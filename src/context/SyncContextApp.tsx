@@ -71,22 +71,26 @@ export function saveLocalUsers(users: UserAccount[]): void {
 
 export function getLocalActiveUser(availableUsers: UserAccount[]): UserAccount | null {
   try {
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
-    if (!data) return availableUsers[0] || DEFAULT_USERS[0];
+    // Clear legacy localStorage active user if exists so app always prompts login on fresh start
+    localStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
+
+    const data = sessionStorage.getItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
+    if (!data) return null;
     const parsed = JSON.parse(data);
-    const found = availableUsers.find((u) => u.id === parsed.id || u.username === parsed.username);
-    return found || availableUsers[0] || DEFAULT_USERS[0];
+    const found = availableUsers.find((u) => u.id === parsed.id || u.username.toLowerCase() === (parsed.username || '').toLowerCase());
+    return found || null;
   } catch {
-    return availableUsers[0] || DEFAULT_USERS[0];
+    return null;
   }
 }
 
 export function saveLocalActiveUser(user: UserAccount | null): void {
   if (user) {
-    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_USER, JSON.stringify(user));
+    sessionStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_USER, JSON.stringify(user));
   } else {
-    localStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
+    sessionStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
   }
+  localStorage.removeItem(LOCAL_STORAGE_KEY_ACTIVE_USER);
 }
 
 interface SyncContextType {

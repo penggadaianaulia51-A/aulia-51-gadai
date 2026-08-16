@@ -177,13 +177,22 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               <div className="text-[10px] text-slate-400 truncate">@{activeUser?.username || 'user'}</div>
             </div>
           </div>
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/50 px-2 py-1 rounded-lg transition"
-            title="Ganti Pengguna / Login"
-          >
-            Switch User
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="text-[10px] font-bold text-indigo-300 hover:text-white bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/50 px-1.5 py-1 rounded-lg transition"
+              title="Ganti Pengguna"
+            >
+              Switch
+            </button>
+            <button
+              onClick={logoutAppUser}
+              className="text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950/80 hover:bg-rose-900 border border-rose-700/50 px-1.5 py-1 rounded-lg transition flex items-center gap-1"
+              title="Keluar Sesi / Logout"
+            >
+              <LogOut className="w-3 h-3" /> Keluar
+            </button>
+          </div>
         </div>
 
         {/* Navigation Group Items */}

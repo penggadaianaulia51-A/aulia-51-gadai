@@ -49,6 +49,8 @@ export interface TransaksiGadai {
   tanggalSelesai?: string;
   petugas: string;
   catatan?: string;
+  pinHp?: string; // PIN / Password kunci HP / Laptop
+  polaHp?: number[]; // Array urutan titik pola 3x3 (0-8)
 }
 
 export interface Pembayaran {

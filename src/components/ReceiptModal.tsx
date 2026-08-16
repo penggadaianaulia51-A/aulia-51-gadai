@@ -1,6 +1,7 @@
 import React from 'react';
 import { TransaksiGadai, Nasabah, Pembayaran, AppSettings } from '../types';
 import { formatRupiah, formatDateIndonesian } from '../utils/calculator';
+import { PatternLock } from './PatternLock';
 import { Printer, Send, Mail, CheckCircle, X, Download } from 'lucide-react';
 
 interface ReceiptModalProps {
@@ -46,6 +47,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       `Pinjaman: *${formatRupiah(transaksi.pinjaman)}*\n` +
       `Biaya Admin (7%): *${formatRupiah(transaksi.biayaAdmin)}*\n` +
       `Jatuh Tempo: *${formatDateIndonesian(transaksi.jatuhTempo)}*\n` +
+      `Tanggal Hangus: *${formatDateIndonesian(transaksi.masaTenggangHingga)}*\n` +
       (pembayaran ? `Total Dibayar: *${formatRupiah(pembayaran.totalDibayar)}* (${pembayaran.metodePembayaran})\n` : '') +
       `-------------------------------------\n` +
       `Terima kasih telah menggunakan layanan ${settings.namaToko}.\n` +
@@ -111,7 +113,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             </div>
 
             {/* Receipt Title */}
-            <div className="text-center border-2 border-black bg-gray-100 text-black font-black text-xs py-1 px-2 uppercase rounded mb-2 tracking-wide">
+            <div className="text-center border-2 border-black bg-white text-black font-black text-xs py-1 px-2 uppercase mb-2 tracking-wide">
               {type === 'GADAI_BARU'
                 ? 'NOTA PENDAFTARAN GADAI BARU'
                 : type === 'PERPANJANG'
@@ -120,7 +122,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             </div>
 
             {/* Transaction Metadata */}
-            <div className="grid grid-cols-2 gap-x-2 text-[10px] bg-white p-1.5 rounded border border-black mb-2 text-black">
+            <div className="grid grid-cols-2 gap-x-2 text-[10px] bg-white p-1.5 border border-black mb-2 text-black">
               <div>
                 <span className="text-black font-medium">NO NOTA:</span>{' '}
                 <b className="text-black font-bold">{transaksi.id}</b>
@@ -215,6 +217,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                         : transaksi.perlengkapan}
                     </td>
                   </tr>
+                  {transaksi.pinHp && (
+                    <tr>
+                      <td className="text-black font-bold">PIN / Passcode</td>
+                      <td className="text-center text-black">:</td>
+                      <td className="font-bold font-mono text-black">{transaksi.pinHp}</td>
+                    </tr>
+                  )}
+                  {transaksi.polaHp && transaksi.polaHp.length > 0 && (
+                    <tr>
+                      <td className="text-black font-bold">Pola Layar (Pattern)</td>
+                      <td className="text-center text-black">:</td>
+                      <td className="text-black">
+                        <div className="flex items-center gap-2 py-0.5">
+                          <b className="font-mono text-[9px] text-black">
+                            [{transaksi.polaHp.map((d) => d + 1).join(' ➔ ')}]
+                          </b>
+                          <PatternLock value={transaksi.polaHp} readOnly monochrome size={55} />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -239,6 +262,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               <div className="flex justify-between text-[10px] text-black font-bold my-0.5 border-t border-black pt-1">
                 <span>Jatuh Tempo (14 Hari):</span>
                 <span>{formatDateIndonesian(transaksi.jatuhTempo)}</span>
+              </div>
+              <div className="flex justify-between text-[10px] text-black font-bold my-0.5">
+                <span>Tanggal Hangus / Lelang:</span>
+                <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
               </div>
 
               {pembayaran && (
