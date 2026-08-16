@@ -6,6 +6,22 @@ export const GRACE_PERIOD_DAYS = 14; // Masa tenggang 14 hari
 export const LATE_FEE_RATE_PER_DAY = 0.008; // 0.8% per hari
 
 /**
+ * Helper to parse YYYY-MM-DD into a UTC Date object (prevents timezone shifts)
+ */
+export function parseDateUTC(dateStr: string): Date {
+  if (!dateStr) return new Date();
+  const cleanStr = dateStr.split('T')[0];
+  const parts = cleanStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    return new Date(Date.UTC(year, month, day));
+  }
+  return new Date(dateStr);
+}
+
+/**
  * Format number to Indonesian Rupiah (e.g., Rp 1.500.000)
  */
 export function formatRupiah(amount: number): string {
@@ -23,12 +39,13 @@ export function formatRupiah(amount: number): string {
 export function formatDateIndonesian(dateString: string): string {
   if (!dateString) return '-';
   try {
-    const d = new Date(dateString);
+    const d = parseDateUTC(dateString);
     if (isNaN(d.getTime())) return dateString;
     return new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
+      timeZone: 'UTC',
     }).format(d);
   } catch {
     return dateString;
@@ -36,28 +53,32 @@ export function formatDateIndonesian(dateString: string): string {
 }
 
 /**
- * Helper to add days to a date string (YYYY-MM-DD)
+ * Helper to add days to a date string (YYYY-MM-DD) cleanly in UTC
  */
 export function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + days);
+  const d = parseDateUTC(dateStr);
+  d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().split('T')[0];
 }
 
 /**
- * Calculate difference in calendar days between two dates
+ * Calculate difference in calendar days between two dates (toDate - fromDate)
  */
 export function getDaysDifference(fromDateStr: string, toDateStr: string = new Date().toISOString().split('T')[0]): number {
-  const from = new Date(fromDateStr);
-  const to = new Date(toDateStr);
-  from.setHours(0, 0, 0, 0);
-  to.setHours(0, 0, 0, 0);
+  if (!fromDateStr || !toDateStr) return 0;
+  const from = parseDateUTC(fromDateStr);
+  const to = parseDateUTC(toDateStr);
   const diffTime = to.getTime() - from.getTime();
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
 /**
- * Calculates admin fee (7%), maturity date (14 days), and grace period end (28 days total)
+ * Calculates admin fee (7%), maturity date (+14 days), and grace period end (+28 days total)
+ * Example:
+ *  - tanggalGadai: 22 Juli 2026
+ *  - jatuhTempo: 05 Agustus 2026 (+14 hari, AKTIF)
+ *  - masaTenggangHingga: 19 Agustus 2026 (+14 hari dari jatuh tempo, TENGGANG)
+ *  - 20 Agustus 2026: HANGUS & TERLELANG
  */
 export function calculateNewPawn(pinjaman: number, tanggalGadai: string = new Date().toISOString().split('T')[0]) {
   const biayaAdmin = Math.round(pinjaman * ADMIN_RATE);
@@ -70,15 +91,22 @@ export function calculateNewPawn(pinjaman: number, tanggalGadai: string = new Da
     tanggalGadai,
     jatuhTempo,
     masaTenggangHingga,
-    potonganAwal: 0, // Admin dibayar di belakang
-    penerimaanBersih: pinjaman, // Nasabah terima FULL
+    potonganAwal: 0,
+    penerimaanBersih: pinjaman,
   };
 }
 
 /**
  * Evaluates current status and calculates late fee (denda) dynamically based on current date
+ * Status Rules:
+ *  1. currentDate <= jatuhTempo (05 Agustus): AKTIF (Denda = 0)
+ *  2. jatuhTempo < currentDate <= masaTenggangHingga (06 Agustus s/d 19 Agustus): TENGGANG (Denda 0.8%/hari)
+ *  3. currentDate > masaTenggangHingga (20 Agustus ke atas): HANGUS
  */
-export function evaluatePawnStatus(transaksi: TransaksiGadai, currentDateStr: string = new Date().toISOString().split('T')[0]): {
+export function evaluatePawnStatus(
+  transaksi: TransaksiGadai,
+  currentDateStr: string = new Date().toISOString().split('T')[0]
+): {
   status: StatusGadai;
   hariKeterlambatan: number;
   denda: number;
@@ -93,7 +121,7 @@ export function evaluatePawnStatus(transaksi: TransaksiGadai, currentDateStr: st
       hariKeterlambatan: 0,
       denda: transaksi.denda || 0,
       biayaAdmin: transaksi.biayaAdmin,
-      totalPelunasan: (transaksi.totalDibayar || 0),
+      totalPelunasan: transaksi.totalDibayar || 0,
       totalPerpanjang: transaksi.biayaAdmin + (transaksi.denda || 0),
     };
   }
@@ -104,20 +132,19 @@ export function evaluatePawnStatus(transaksi: TransaksiGadai, currentDateStr: st
   let denda = 0;
 
   if (daysPastMaturity <= 0) {
-    // Normal active period
+    // Normal active period (Hingga tanggal Jatuh Tempo, e.g. 05 Agustus)
     status = 'AKTIF';
     hariKeterlambatan = 0;
     denda = 0;
   } else if (daysPastMaturity <= GRACE_PERIOD_DAYS) {
-    // Grace period (Masa Tenggang <= 14 hari)
+    // Grace period (Hari ke-1 s/d 14 setelah Jatuh Tempo, e.g. 06 s/d 19 Agustus)
     status = 'TENGGANG';
     hariKeterlambatan = daysPastMaturity;
-    // Denda 0.8% per hari
     denda = Math.round(transaksi.pinjaman * LATE_FEE_RATE_PER_DAY * hariKeterlambatan);
   } else {
-    // Exceeded 14 days grace period -> HANGUS & ENTER LEILANG LIST
+    // Exceeded 14 days grace period (Hari ke-15 setelah Jatuh Tempo / 20 Agustus ke atas) -> HANGUS!
     status = 'HANGUS';
-    hariKeterlambatan = GRACE_PERIOD_DAYS; // Capped at 14 days grace
+    hariKeterlambatan = GRACE_PERIOD_DAYS; // Cap denda at 14 days
     denda = Math.round(transaksi.pinjaman * LATE_FEE_RATE_PER_DAY * GRACE_PERIOD_DAYS);
   }
 
