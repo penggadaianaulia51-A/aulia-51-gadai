@@ -78,7 +78,7 @@ export function getDaysDifference(fromDateStr: string, toDateStr: string = new D
  *  - tanggalGadai: 22 Juli 2026
  *  - jatuhTempo: 05 Agustus 2026 (+14 hari, AKTIF)
  *  - masaTenggangHingga: 19 Agustus 2026 (+14 hari dari jatuh tempo, TENGGANG)
- *  - 20 Agustus 2026: HANGUS & TERLELANG
+ *  - 20 Agustus 2026 ke atas: HANGUS & SIAP LELANG
  */
 export function calculateNewPawn(pinjaman: number, tanggalGadai: string = new Date().toISOString().split('T')[0]) {
   const biayaAdmin = Math.round(pinjaman * ADMIN_RATE);
@@ -99,9 +99,9 @@ export function calculateNewPawn(pinjaman: number, tanggalGadai: string = new Da
 /**
  * Evaluates current status and calculates late fee (denda) dynamically based on current date
  * Status Rules:
- *  1. currentDate <= jatuhTempo (05 Agustus): AKTIF (Denda = 0)
- *  2. jatuhTempo < currentDate <= masaTenggangHingga (06 Agustus s/d 19 Agustus): TENGGANG (Denda 0.8%/hari)
- *  3. currentDate > masaTenggangHingga (20 Agustus ke atas): HANGUS
+ *  1. currentDate <= jatuhTempo (e.g. 05 Agustus): AKTIF (Denda = Rp 0)
+ *  2. jatuhTempo < currentDate <= masaTenggangHingga (e.g. 06 s/d 19 Agustus): TENGGANG (Denda 0.8%/hari)
+ *  3. currentDate > masaTenggangHingga (e.g. 20 Agustus ke atas): HANGUS
  */
 export function evaluatePawnStatus(
   transaksi: TransaksiGadai,
@@ -126,25 +126,30 @@ export function evaluatePawnStatus(
     };
   }
 
-  const daysPastMaturity = getDaysDifference(transaksi.jatuhTempo, currentDateStr);
+  const todayStr = currentDateStr.split('T')[0];
+  const jatuhTempoStr = (transaksi.jatuhTempo || '').split('T')[0];
+  const masaTenggangStr = (
+    transaksi.masaTenggangHingga || addDays(jatuhTempoStr, GRACE_PERIOD_DAYS)
+  ).split('T')[0];
+
   let status: StatusGadai = 'AKTIF';
   let hariKeterlambatan = 0;
   let denda = 0;
 
-  if (daysPastMaturity <= 0) {
-    // Normal active period (Hingga tanggal Jatuh Tempo, e.g. 05 Agustus)
+  if (todayStr <= jatuhTempoStr) {
+    // 1. Normal active period (s/d Tanggal Jatuh Tempo)
     status = 'AKTIF';
     hariKeterlambatan = 0;
     denda = 0;
-  } else if (daysPastMaturity <= GRACE_PERIOD_DAYS) {
-    // Grace period (Hari ke-1 s/d 14 setelah Jatuh Tempo, e.g. 06 s/d 19 Agustus)
+  } else if (todayStr <= masaTenggangStr) {
+    // 2. Grace period (Hari ke-1 s/d 14 setelah Jatuh Tempo)
     status = 'TENGGANG';
-    hariKeterlambatan = daysPastMaturity;
+    hariKeterlambatan = Math.max(1, getDaysDifference(jatuhTempoStr, todayStr));
     denda = Math.round(transaksi.pinjaman * LATE_FEE_RATE_PER_DAY * hariKeterlambatan);
   } else {
-    // Exceeded 14 days grace period (Hari ke-15 setelah Jatuh Tempo / 20 Agustus ke atas) -> HANGUS!
+    // 3. Exceeded Masa Tenggang (Hari ke-15 setelah Jatuh Tempo / Lewat Masa Tenggang) -> HANGUS!
     status = 'HANGUS';
-    hariKeterlambatan = GRACE_PERIOD_DAYS; // Cap denda at 14 days
+    hariKeterlambatan = GRACE_PERIOD_DAYS; // Cap late fee at 14 days
     denda = Math.round(transaksi.pinjaman * LATE_FEE_RATE_PER_DAY * GRACE_PERIOD_DAYS);
   }
 
