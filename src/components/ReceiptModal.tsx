@@ -218,27 +218,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                         : transaksi.perlengkapan}
                     </td>
                   </tr>
-                  {transaksi.pinHp && (
-                    <tr>
-                      <td className="text-black font-bold">PIN / Passcode</td>
-                      <td className="text-center text-black">:</td>
-                      <td className="font-bold font-mono text-black">{transaksi.pinHp}</td>
-                    </tr>
-                  )}
-                  {transaksi.polaHp && transaksi.polaHp.length > 0 && (
-                    <tr>
-                      <td className="text-black font-bold">Pola Layar (Pattern)</td>
-                      <td className="text-center text-black">:</td>
-                      <td className="text-black">
+                  <tr>
+                    <td className="text-black font-bold">PIN / Passcode HP</td>
+                    <td className="text-center text-black">:</td>
+                    <td className="font-bold font-mono text-black">{transaksi.pinHp || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-black font-bold">Pola Layar (Pattern)</td>
+                    <td className="text-center text-black">:</td>
+                    <td className="text-black">
+                      {transaksi.polaHp && transaksi.polaHp.length > 0 ? (
                         <div className="flex items-center gap-2 py-0.5">
                           <b className="font-mono text-[9px] text-black">
                             [{transaksi.polaHp.map((d) => d + 1).join(' ➔ ')}]
                           </b>
                           <PatternLock value={transaksi.polaHp} readOnly monochrome size={55} />
                         </div>
-                      </td>
-                    </tr>
-                  )}
+                      ) : (
+                        <span className="text-black font-normal">-</span>
+                      )}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -262,12 +262,16 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </div>
               <div className="flex justify-between text-[10px] text-black font-bold my-0.5 border-t border-black pt-1">
                 <span>Jatuh Tempo (14 Hari):</span>
-                <span>
+                <span className="text-right">
                   {formatDateIndonesian(transaksi.jatuhTempo)}, TANGGAL HANGUS {formatDateIndonesian(addDays(transaksi.jatuhTempo, 1)).toUpperCase()}
                 </span>
               </div>
+              <div className="flex justify-between text-[10px] text-black font-bold my-0.5">
+                <span>Tanggal Hangus:</span>
+                <span>{formatDateIndonesian(addDays(transaksi.jatuhTempo, 1))}</span>
+              </div>
               <div className="flex justify-between text-[9px] text-black my-0.5">
-                <span>Batas Masa Tenggang (+14 Hari):</span>
+                <span>Batas Akhir Masa Tenggang (+14 Hari):</span>
                 <span>{formatDateIndonesian(transaksi.masaTenggangHingga)}</span>
               </div>
 
